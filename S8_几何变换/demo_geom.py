@@ -26,20 +26,17 @@ print("实验一：最近邻 vs 双线性 vs 双三次插值")
 print("=" * 60)
 
 # 加载测试图（如果没有就用合成图）
-test_path = "05_文件格式/test_format.png"
-test_img = cv2.imread(test_path, cv2.IMREAD_GRAYSCALE)
-if test_img is None:
-    # 合成测试图：包含斜线、文字、高频纹理
-    test_img = np.zeros((300, 400), dtype=np.uint8)
-    test_img[:, :] = 200
-    # 加斜线（最容易暴露锯齿）
-    for i in range(300):
-        j = int(i * 1.5)
-        if j < 400:
-            test_img[i, j] = 50
-    # 加格子纹理
-    test_img[::20, :] = 100
-    test_img[:, ::20] = 100
+# 合成测试图：包含斜线和高频纹理（不再依赖外部文件）
+test_img = np.zeros((300, 400), dtype=np.uint8)
+test_img[:, :] = 200
+# 加斜线（最容易暴露锯齿）
+for i in range(300):
+    j = int(i * 1.5)
+    if j < 400:
+        test_img[i, j] = 50
+# 加格子纹理
+test_img[::20, :] = 100
+test_img[:, ::20] = 100
 
 # 缩小再放大（模拟多次变换）
 scale = 0.5
@@ -114,7 +111,7 @@ axes[1, 3].axis("off")
 
 plt.suptitle("实验一：三种插值方法对比\n（缩小50%再放大，观察斜线边缘的锯齿程度）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("08_几何变换/实验结果_插值对比.png", dpi=150, bbox_inches="tight")
+plt.savefig("S8_几何变换/实验结果_插值对比.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验一图已保存")
 plt.show()
 
@@ -154,7 +151,7 @@ plt.ylabel("PSNR (dB)")
 plt.title("实验二：多次旋转的插值误差累积\n（每次旋转都用双线性插值，10次后PSNR下降约10dB）")
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.savefig("08_几何变换/实验结果_误差累积.png", dpi=150, bbox_inches="tight")
+plt.savefig("S8_几何变换/实验结果_误差累积.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -274,7 +271,7 @@ axes[1, 2].axis("off")
 
 plt.suptitle("实验三：图像配准三步骤\n（特征提取→特征匹配→RANSAC估计变换→对齐）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("08_几何变换/实验结果_配准.png", dpi=150, bbox_inches="tight")
+plt.savefig("S8_几何变换/实验结果_配准.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验三图已保存")
 plt.show()
 

@@ -15,6 +15,8 @@
   python demo_edge.py
 """
 
+import matplotlib
+matplotlib.use('Agg')  # headless模式，不弹窗
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,22 +29,14 @@ print("实验一：Roberts / Sobel / Prewitt 边缘检测算子对比")
 print("=" * 60)
 
 # 加载测试图
-test_path = "05_文件格式/test_format.png"
-test_gray = cv2.imread(test_path, cv2.IMREAD_GRAYSCALE)
-if test_gray is None:
-    # 合成测试图：包含不同方向的边缘
-    test_gray = np.zeros((300, 400), dtype=np.uint8)
-    # 加垂直边缘
-    test_gray[:, 100:110] = 200
-    test_gray[:, 200:220] = 100
-    # 加水平边缘
-    test_gray[80:90, :] = 200
-    test_gray[180:200, :] = 50
-    # 加斜线
-    for i in range(300):
-        j = int(i * 1.2)
-        if j < 400:
-            test_gray[i, j] = 180
+# 合成测试图：包含不同方向的边缘（不再依赖外部文件）
+test_gray = np.zeros((300, 400), dtype=np.uint8)
+# 加垂直边缘
+test_gray[:, 100:110] = 200
+test_gray[:, 200:220] = 100
+# 加水平边缘
+test_gray[80:90, :] = 200
+test_gray[180:200, :] = 50
 
 # Roberts算子（手动实现）
 roberts_x = np.array([[1, 0], [0, -1]], dtype=np.float32)
@@ -111,7 +105,7 @@ axes[1, 0].axis("off")
 
 plt.suptitle("实验一：三种差分算子对比\n（Roberts最简单但噪声敏感，Sobel最常用）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("09_边缘检测基础/实验结果_算子对比.png", dpi=150, bbox_inches="tight")
+plt.savefig("S9_边缘检测基础/实验结果_算子对比.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验一图已保存")
 plt.show()
 
@@ -199,7 +193,7 @@ axes[1, 2].axis("off")
 
 plt.suptitle("实验二：噪声→边缘检测变差→高斯平滑是解法\n（Sobel是差分算子，放大高频→放大噪声→需要先平滑）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("09_边缘检测基础/实验结果_噪声影响.png", dpi=150, bbox_inches="tight")
+plt.savefig("S9_边缘检测基础/实验结果_噪声影响.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -301,7 +295,7 @@ for row, (name, img) in enumerate(scenarios):
 
 plt.suptitle("实验三：阈值分割方法对比\n（双峰→Otsu好 | 单峰→Otsu失效 | 光照不均→自适应阈值好）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("09_边缘检测基础/实验结果_阈值分割.png", dpi=150, bbox_inches="tight")
+plt.savefig("S9_边缘检测基础/实验结果_阈值分割.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验三图已保存")
 plt.show()
 

@@ -22,7 +22,7 @@ from PIL import Image
 import os
 
 # 确保输出目录存在
-os.makedirs("05_文件格式", exist_ok=True)
+os.makedirs("S5_文件格式", exist_ok=True)
 
 # ============================================================
 # 实验一：同一张图，不同格式的文件大小和质量对比
@@ -51,10 +51,10 @@ for i in range(100, 500, 40):
 # 保存为三种格式
 test_img_bgr = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
 
-bmp_path = "05_文件格式/test_format.bmp"
-png_path = "05_文件格式/test_format.png"
-jpg_path_high = "05_文件格式/test_format_q95.jpg"
-jpg_path_low = "05_文件格式/test_format_q50.jpg"
+bmp_path = "S5_文件格式/test_format.bmp"
+png_path = "S5_文件格式/test_format.png"
+jpg_path_high = "S5_文件格式/test_format_q95.jpg"
+jpg_path_low = "S5_文件格式/test_format_q50.jpg"
 
 cv2.imwrite(bmp_path, test_img_bgr)
 cv2.imwrite(png_path, test_img_bgr)
@@ -121,7 +121,7 @@ for col, (img, title) in enumerate(images):
 
 plt.suptitle("实验一：文件格式对比\n（大小、质量、文字区域块效应）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("05_文件格式/实验结果_格式对比.png", dpi=150, bbox_inches="tight")
+plt.savefig("S5_文件格式/实验结果_格式对比.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验一图已保存")
 plt.show()
 
@@ -149,7 +149,7 @@ for i in iterations:
     else:
         # 用Q=85保存（模拟每次处理都重新编码）
         current_img = current_img.copy()
-        temp_path = f"05_文件格式/iter_{i}.jpg"
+        temp_path = f"S5_文件格式/iter_{i}.jpg"
         cv2.imwrite(temp_path, current_img, [cv2.IMWRITE_JPEG_QUALITY, 85])
         current_img = cv2.imread(temp_path)
         psnr = compute_psnr(test_img_bgr, current_img)
@@ -174,7 +174,7 @@ plt.ylabel("PSNR (dB)")
 plt.title("实验二：JPG多次保存的累积质量损失\n（每次用Q=85重新编码）")
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.savefig("05_文件格式/实验结果_JPG累积损失.png", dpi=150, bbox_inches="tight")
+plt.savefig("S5_文件格式/实验结果_JPG累积损失.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -192,7 +192,7 @@ flip_test[100:, :] = [0, 0, 255]    # 下半：蓝色
 
 # 保存BMP
 flip_test_bgr = cv2.cvtColor(flip_test, cv2.COLOR_RGB2BGR)
-flip_bmp_path = "05_文件格式/flip_test.bmp"
+flip_bmp_path = "S5_文件格式/flip_test.bmp"
 cv2.imwrite(flip_bmp_path, flip_test_bgr)
 
 # 用PIL读取（正确处理了BMP的存储顺序）
@@ -235,7 +235,7 @@ axes[2].axis("off")
 
 plt.suptitle("实验三：BMP从下到上存储导致的Y轴翻转问题\n（如果你自己写BMP解析器容易踩这个坑）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("05_文件格式/实验结果_BMP翻转.png", dpi=150, bbox_inches="tight")
+plt.savefig("S5_文件格式/实验结果_BMP翻转.png", dpi=150, bbox_inches="tight")
 print("[保存] 实验三图已保存")
 plt.show()
 

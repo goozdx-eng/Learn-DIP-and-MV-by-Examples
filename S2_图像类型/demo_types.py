@@ -181,7 +181,7 @@ axes[3].set_ylabel("像素个数")
 
 plt.suptitle("四种图像类型对比实验", fontsize=14, fontweight="bold")
 plt.tight_layout()
-plt.savefig("02_图像类型/实验结果_四类图像对比.png", dpi=150, bbox_inches="tight")
+plt.savefig("S2_图像类型/实验结果_四类图像对比.png", dpi=150, bbox_inches="tight")
 print("[保存] 实验结果图已保存到 02_图像类型/实验结果_四类图像对比.png")
 plt.show()
 

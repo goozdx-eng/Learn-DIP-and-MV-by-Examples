@@ -96,7 +96,7 @@ for row, (title, img, hist) in enumerate(scenarios):
 
 plt.suptitle("实验一：四种典型直方图形态\n（直方图告诉你图像是偏暗、偏亮、对比度低还是双峰分离）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("07_直方图/实验结果_直方图形态.png", dpi=150, bbox_inches="tight")
+plt.savefig("S7_直方图/实验结果_直方图形态.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验一图已保存")
 plt.show()
 
@@ -199,7 +199,7 @@ axes[2, 2].set_xlim(0, 255)
 
 plt.suptitle("实验二：直方图均衡化原理\n（CDF映射把挤在[60,160]的灰度铺开到[0,255]）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("07_直方图/实验结果_均衡化.png", dpi=150, bbox_inches="tight")
+plt.savefig("S7_直方图/实验结果_均衡化.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -294,7 +294,7 @@ axes[1, 3].axis("off")
 
 plt.suptitle("实验三：均衡化"帮倒忙"\n（上：噪声放大 | 下：光照不均导致过曝）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("07_直方图/实验结果_均衡化陷阱.png", dpi=150, bbox_inches="tight")
+plt.savefig("S7_直方图/实验结果_均衡化陷阱.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验三图已保存")
 plt.show()
 
@@ -344,7 +344,7 @@ axes[3].set_title("亮度曲线对比")
 
 plt.suptitle("实验四：CLAHE（自适应直方图均衡化）\n（分块做均衡化，避免光照不均的过曝问题）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("07_直方图/实验结果_CLAHE.png", dpi=150, bbox_inches="tight")
+plt.savefig("S7_直方图/实验结果_CLAHE.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验四图已保存")
 plt.show()
 

@@ -67,7 +67,7 @@ for col, (img, title) in enumerate(operations):
 
 plt.suptitle("实验一：点运算\n（每个输出像素只由对应的输入像素决定，和邻居无关）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("06_运算类型/实验结果_点运算.png", dpi=150, bbox_inches="tight")
+plt.savefig("S6_运算类型/实验结果_点运算.png", dpi=150, bbox_inches="tight")
 print("[保存] 实验一图已保存")
 plt.show()
 
@@ -83,14 +83,11 @@ print("实验二：均值滤波 vs 中值滤波（椒盐噪声）")
 print("=" * 60)
 
 # 构造一张清晰的测试图
-clear_img = cv2.imread("05_文件格式/test_format.png", cv2.IMREAD_GRAYSCALE)
-if clear_img is None:
-    # 如果找不到就用合成图
-    clear_img = np.zeros((300, 400), dtype=np.uint8)
-    clear_img[:, :] = np.linspace(0, 255, 400, dtype=np.uint8)[np.newaxis, :]
-    # 加一些结构（模拟文字/边缘）
-    clear_img[100:200, 50:350] = 180
-    clear_img[120:180, 80:320] = 80
+# 合成测试图：包含渐变和色块（不再依赖外部文件）
+clear_img = np.zeros((300, 400), dtype=np.uint8)
+clear_img[:, :] = np.linspace(0, 255, 400, dtype=np.uint8)[np.newaxis, :]
+clear_img[100:200, 50:350] = 180
+clear_img[120:180, 80:320] = 80
 
 # 添加椒盐噪声：随机10%的像素变成0或255
 noisy_img = clear_img.copy()
@@ -201,7 +198,7 @@ axes[2, 4].axis("off")
 
 plt.suptitle("实验二：均值滤波 vs 中值滤波（椒盐噪声）\n（中值滤波忽略极端值，对脉冲噪声天然有效）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("06_运算类型/实验结果_滤波对比.png", dpi=150, bbox_inches="tight")
+plt.savefig("S6_运算类型/实验结果_滤波对比.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -297,7 +294,7 @@ axes[1, 3].axis("off")
 
 plt.suptitle("实验三：叠加原理验证\n（均值=线性（误差≈0）| 中值=非线性（误差非零））", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("06_运算类型/实验结果_叠加原理.png", dpi=150, bbox_inches="tight")
+plt.savefig("S6_运算类型/实验结果_叠加原理.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验三图已保存")
 plt.show()
 

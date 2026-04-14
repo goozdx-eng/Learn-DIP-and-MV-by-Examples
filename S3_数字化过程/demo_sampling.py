@@ -59,7 +59,7 @@ for i, (img, label) in enumerate(zip(sampled_images, labels)):
 
 plt.suptitle("实验一：采样密度对图像质量的影响\n（同一张图，不同像素数量）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("03_数字化过程/实验结果_采样密度.png", dpi=150, bbox_inches="tight")
+plt.savefig("S3_数字化过程/实验结果_采样密度.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验一图已保存")
 plt.show()
 
@@ -110,7 +110,7 @@ for i, (img, levels) in enumerate(zip(quantized_images, quantization_levels)):
 
 plt.suptitle("实验二：量化级别对渐变平滑度的影响\n（上排：完整渐变 下排：放大渐变中部，看条带）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("03_数字化过程/实验结果_量化级别.png", dpi=150, bbox_inches="tight")
+plt.savefig("S3_数字化过程/实验结果_量化级别.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -163,7 +163,7 @@ for i, res in enumerate(camera_resolutions):
 
 plt.suptitle("实验三：欠采样产生摩尔纹\n（高频条纹被错误采样后形成低频波纹）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("03_数字化过程/实验结果_摩尔纹.png", dpi=150, bbox_inches="tight")
+plt.savefig("S3_数字化过程/实验结果_摩尔纹.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验三图已保存")
 plt.show()
 
@@ -214,7 +214,7 @@ for row, (label, sample_rate, levels) in enumerate(configs):
 
 plt.suptitle("实验四：采样和量化独立作用\n（行列分别是原始/低采样 × 列分别是原始/低量化）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("03_数字化过程/实验结果_采样量化独立.png", dpi=150, bbox_inches="tight")
+plt.savefig("S3_数字化过程/实验结果_采样量化独立.png", dpi=150, bbox_inches="tight")
 print("[保存] 实验四图已保存")
 plt.show()
 

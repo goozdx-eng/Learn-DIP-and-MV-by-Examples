@@ -82,7 +82,7 @@ for i, delta in enumerate(illumination_deltas):
 
 plt.suptitle("实验一：光照变化对RGB三通道的影响\n（四个色块：红、绿、蓝、黄）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("04_颜色模型/实验结果_RGB耦合.png", dpi=150, bbox_inches="tight")
+plt.savefig("S4_颜色模型/实验结果_RGB耦合.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验一图已保存到 04_颜色模型/实验结果_RGB耦合.png")
 plt.show()
 
@@ -151,7 +151,7 @@ for row, delta in enumerate(illumination_deltas):
 
 plt.suptitle("实验二：光照变化时RGB vs HSV对比\n（V随光照变，H几乎不变——这就是HSV适合颜色分割的原因）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("04_颜色模型/实验结果_HSV分离.png", dpi=150, bbox_inches="tight")
+plt.savefig("S4_颜色模型/实验结果_HSV分离.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验二图已保存")
 plt.show()
 
@@ -229,7 +229,7 @@ axes[3].axis("off")
 
 plt.suptitle("实验三：HSV颜色分割实战\n（光照变化时依然能检测到红色和绿色）", fontsize=13, fontweight="bold")
 plt.tight_layout()
-plt.savefig("04_颜色模型/实验结果_HSV颜色分割.png", dpi=150, bbox_inches="tight")
+plt.savefig("S4_颜色模型/实验结果_HSV颜色分割.png", dpi=150, bbox_inches="tight")
 print("\n[保存] 实验三图已保存")
 plt.show()
 
