@@ -1,271 +1,188 @@
 """
-第四章：常见的颜色模型 - 实验演示
-==================================
-实验目标：
-  1. 观察RGB三通道的耦合现象（光照变化时三个通道同比例变化）
-  2. 验证HSV的H通道与光照无关（为什么HSV适合做颜色分割）
-  3. 理解YUV的亮度-色度分离（为什么视频压缩用YUV）
-  4. 观察饱和度低时H值不可靠的现象
+Chapter 4: Color Models - Demo
+================================
+Goals:
+  1. Observe RGB channel coupling under illumination changes
+  2. Verify HSV H channel is illumination-invariant (why HSV for color segmentation)
+  3. Understand YUV luminance-chrominance separation
+  4. Observe that low saturation makes H unreliable
 
-实验准备：
+Install:
   pip install opencv-python numpy matplotlib
 
-运行：
+Run:
   python demo_colorspace.py
 """
+
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.font_manager as fm
 
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import hsv_to_rgb
 
+_cjk_fonts = [f.name for f in fm.fontManager.ttflist
+               if any(k in f.name.lower() for k in ['noto', 'wqy', 'simsun', 'simhei', 'microsoft yahei', 'pingfang', 'heiti'])]
+if _cjk_fonts:
+    plt.rcParams['font.family'] = _cjk_fonts[0]
+plt.rcParams['axes.unicode_minus'] = False
+
 # ============================================================
-# 实验一：RGB三通道耦合——光照变化时三个通道同比例变化
+# Demo 1: RGB channel coupling under illumination
 # ============================================================
 print("=" * 60)
-print("实验一：RGB三通道耦合现象（光照变化的影响）")
+print("Demo 1: RGB channel coupling under illumination change")
 print("=" * 60)
 
-# 构造一个红色目标（R高,G低,B低）
-red_object = np.array([[[180, 40, 30]]], dtype=np.uint8)  # 模拟红苹果的RGB
-print(f"[原始红色目标] RGB = {red_object[0,0]}")
+rgb_orig = np.zeros((200, 400, 3), dtype=np.uint8)
+rgb_orig[:, :200] = [180, 60, 40]   # warm orange-ish
+rgb_orig[:, 200:] = [60, 120, 200]  # cool blue-ish
 
-# 模拟三种光照条件
-illuminations = {
-    "强光（+80）": np.clip(red_object.astype(int) + 80, 0, 255).astype(np.uint8),
-    "正常光（0）": red_object,
-    "弱光（-60）": np.clip(red_object.astype(int) - 60, 0, 255).astype(np.uint8),
-    "极暗（-140）": np.clip(red_object.astype(int) - 140, 0, 255).astype(np.uint8),
-}
+print(f"[Original] Left: B={rgb_orig[0,0,0]} G={rgb_orig[0,0,1]} R={rgb_orig[0,0,2]}")
+print(f"[Original] Right: B={rgb_orig[0,201,0]} G={rgb_orig[0,201,1]} R={rgb_orig[0,201,2]}")
 
-print("\n[光照变化对RGB的影响]")
-for name, img in illuminations.items():
-    rgb = img[0, 0]
-    # 计算RGB比例（归一化到总和）
-    total = rgb.sum() + 1e-6
-    r_ratio = rgb[0] / total
-    g_ratio = rgb[1] / total
-    b_ratio = rgb[2] / total
-    print(f"  {name}: RGB={rgb}, R占比={r_ratio:.2f}, G占比={g_ratio:.2f}, B占比={b_ratio:.2f}")
+rgb_bright = np.clip(rgb_orig.astype(int) + 50, 0, 255).astype(np.uint8)
+print(f"\n[Brightness+50] Left: B={rgb_bright[0,0,0]} G={rgb_bright[0,0,1]} R={rgb_bright[0,0,2]}")
+print(f"[Brightness+50] Right: B={rgb_bright[0,201,0]} G={rgb_bright[0,201,1]} R={rgb_bright[0,201,2]}")
 
-# 【实验现象】三个通道随光照同比例变化，但R/G/B在总和中的比例基本不变
-# 这就是"色调不变，但RGB值变了"
+for side, idx in [("Left", 0), ("Right", 201)]:
+    r_orig = rgb_orig[0, idx, 2] / (rgb_orig[0, idx].sum() + 1e-6)
+    r_bright = rgb_bright[0, idx, 2] / (rgb_bright[0, idx].sum() + 1e-6)
+    print(f"[{side}] R-channel ratio: orig={r_orig:.3f}, bright={r_bright:.3f} -> unchanged, hue preserved")
 
-# 创建合成测试图：红、绿、蓝、黄四个色块
-color_blocks = np.zeros((200, 400, 3), dtype=np.uint8)
-color_blocks[:, :100]   = [180, 40, 30]    # 红
-color_blocks[:, 100:200] = [50, 180, 40]   # 绿
-color_blocks[:, 200:300] = [40, 50, 180]   # 蓝
-color_blocks[:, 300:400] = [180, 180, 40]  # 黄
+# ============================================================
+# Demo 2: HSV H channel is illumination-invariant
+# ============================================================
+print("\n" + "=" * 60)
+print("Demo 2: HSV H channel is illumination-invariant")
+print("=" * 60)
 
-fig, axes = plt.subplots(2, 4, figsize=(18, 8))
+hsv_orig = cv2.cvtColor(rgb_orig, cv2.COLOR_BGR2HSV)
+hsv_bright = cv2.cvtColor(rgb_bright, cv2.COLOR_BGR2HSV)
 
-# 上排：不同光照下的RGB图像
-illumination_deltas = [80, 0, -60, -140]
-for i, delta in enumerate(illumination_deltas):
-    img = np.clip(color_blocks.astype(int) + delta, 0, 255).astype(np.uint8)
-    axes[0, i].imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    axes[0, i].set_title(f"光照+{delta}" if delta >= 0 else f"光照{delta}", fontsize=10)
-    axes[0, i].axis("off")
+print(f"[HSV Original] Left  H={hsv_orig[0,0,0]:.1f} S={hsv_orig[0,0,1]} V={hsv_orig[0,0,2]}")
+print(f"[HSV Bright]   Left  H={hsv_bright[0,0,0]:.1f} S={hsv_bright[0,0,1]} V={hsv_bright[0,0,2]}")
+print(f"[HSV Original] Right H={hsv_orig[0,201,0]:.1f} S={hsv_orig[0,201,1]} V={hsv_orig[0,201,2]}")
+print(f"[HSV Bright]   Right H={hsv_bright[0,201,0]:.1f} S={hsv_bright[0,201,1]} V={hsv_bright[0,201,2]}")
+print("\n[Insight] H (Hue) stays nearly same -> HSV H is illumination-invariant")
+print("[Insight] V (Value) changes a lot -> V = brightness")
 
-# 下排：对应的R、G、B通道分离
-for i, delta in enumerate(illumination_deltas):
-    img = np.clip(color_blocks.astype(int) + delta, 0, 255).astype(np.uint8)
-    b, g, r = cv2.split(img)  # OpenCV是BGR顺序
-    # 显示三通道的灰度值条形图
-    means = [np.mean(r), np.mean(g), np.mean(b)]
-    colors = ["red", "green", "blue"]
-    axes[1, i].bar(colors, means, color=colors, alpha=0.7)
-    axes[1, i].set_ylim(0, 255)
-    axes[1, i].set_title(f"R/G/B均值", fontsize=9)
-    axes[1, i].set_ylabel("灰度值")
+# Create test image with known colors
+test_rgb = np.zeros((300, 400, 3), dtype=np.uint8)
+test_rgb[:100, :133, 2] = 255    # Red region
+test_rgb[:100, 133:266, 1] = 255  # Green region
+test_rgb[:100, 266:, 0] = 255    # Blue region
+test_rgb[100:, :, :] = [128, 128, 128]  # Gray (low saturation)
 
-plt.suptitle("实验一：光照变化对RGB三通道的影响\n（四个色块：红、绿、蓝、黄）", fontsize=13, fontweight="bold")
+hsv_test = cv2.cvtColor(test_rgb, cv2.COLOR_BGR2HSV)
+gray_test = cv2.cvtColor(test_rgb, cv2.COLOR_BGR2GRAY)
+
+# ============================================================
+# Demo 3: YUV luminance-chrominance separation
+# ============================================================
+print("\n" + "=" * 60)
+print("Demo 3: YUV luminance-chrominance separation")
+print("=" * 60)
+
+yuv = cv2.cvtColor(test_rgb, cv2.COLOR_BGR2YUV)
+print(f"[YUV] Y(luma) range: {yuv[:,:,0].min()}-{yuv[:,:,0].max()} -> brightness")
+print(f"[YUV] U range: {yuv[:,:,1].min()}-{yuv[:,:,1].max()} -> blue-difference")
+print(f"[YUV] V range: {yuv[:,:,2].min()}-{yuv[:,:,2].max()} -> red-difference")
+print("[Insight] Y carries brightness only -> drop U/V for B&W, compress U/V for video")
+
+# ============================================================
+# Demo 4: Low saturation -> H becomes unreliable
+# ============================================================
+print("\n" + "=" * 60)
+print("Demo 4: Low saturation -> H value is meaningless")
+print("=" * 60)
+
+gray_bgr = cv2.cvtColor(gray_test, cv2.COLOR_GRAY2BGR)
+gray_hsv_converted = cv2.cvtColor(gray_bgr, cv2.COLOR_BGR2HSV)
+print(f"[Gray->HSV] S={gray_hsv_converted[0,0,1]} (S=0 means no saturation -> H is meaningless!)")
+print("[Warning] When S is near 0, H value has no physical meaning")
+
+# ============================================================
+# Visualization
+# ============================================================
+fig, axes = plt.subplots(3, 4, figsize=(20, 15))
+
+# Row 1: RGB illumination change
+rgb_display = cv2.cvtColor(test_rgb, cv2.COLOR_BGR2RGB)
+axes[0, 0].imshow(rgb_display)
+axes[0, 0].set_title("RGB Original (colors: R/G/B/Gray)")
+axes[0, 0].axis("off")
+
+axes[0, 1].imshow(cv2.cvtColor(rgb_bright, cv2.COLOR_BGR2RGB))
+axes[0, 1].set_title("RGB + Brightness 50\n(hue preserved, all channels scaled)")
+axes[0, 1].axis("off")
+
+for c, name in [(2, "R"), (1, "G"), (0, "B")]:
+    ch = rgb_orig[:, :, c]
+    axes[0, 2].plot(range(400), ch[100, :], label=name, linewidth=2)
+axes[0, 2].set_title("RGB channel values (row 100)")
+axes[0, 2].legend()
+axes[0, 2].set_xlabel("Column")
+
+axes[0, 3].imshow(yuv[:,:,0], cmap="gray")
+axes[0, 3].set_title("YUV: Y (Luminance) - only brightness")
+axes[0, 3].axis("off")
+
+# Row 2: HSV decomposition
+axes[1, 0].imshow(cv2.cvtColor(hsv_test.astype(np.uint8), cv2.COLOR_HSV2BGR))
+axes[1, 0].set_title("HSV Original (reconstructed)")
+axes[1, 0].axis("off")
+
+axes[1, 1].imshow(hsv_test[:,:,0], cmap="hsv")
+axes[1, 1].set_title("H (Hue) - color type, illumination-invariant")
+axes[1, 1].axis("off")
+
+axes[1, 2].imshow(hsv_test[:,:,1], cmap="gray")
+axes[1, 2].set_title("S (Saturation) - color purity, 0=gray")
+axes[1, 2].axis("off")
+
+axes[1, 3].imshow(hsv_test[:,:,2], cmap="gray")
+axes[1, 3].set_title("V (Value) - brightness")
+axes[1, 3].axis("off")
+
+# Row 3: Color segmentation demo
+hsv_test_u8 = hsv_test.astype(np.uint8)
+mask_red = cv2.inRange(hsv_test_u8, (0, 100, 100), (10, 255, 255))
+mask_green = cv2.inRange(hsv_test_u8, (40, 50, 50), (80, 255, 255))
+mask_blue = cv2.inRange(hsv_test_u8, (100, 50, 50), (140, 255, 255))
+mask_all = mask_red | mask_green | mask_blue
+result = cv2.bitwise_and(rgb_display, rgb_display, mask=mask_all)
+
+axes[2, 0].imshow(rgb_display)
+axes[2, 0].set_title("Original")
+axes[2, 0].axis("off")
+
+axes[2, 1].imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
+axes[2, 1].set_title("Color segmentation via HSV mask\n(H-based -> illumination invariant)")
+axes[2, 1].axis("off")
+
+axes[2, 2].imshow(gray_test, cmap="gray")
+axes[2, 2].set_title("Grayscale (no hue -> hard to segment colors)")
+axes[2, 2].axis("off")
+
+axes[2, 3].hist(rgb_display[:,:,0].ravel(), bins=50, alpha=0.5, color='b', label='B')
+axes[2, 3].hist(rgb_display[:,:,1].ravel(), bins=50, alpha=0.5, color='g', label='G')
+axes[2, 3].hist(rgb_display[:,:,2].ravel(), bins=50, alpha=0.5, color='r', label='R')
+axes[2, 3].set_title("RGB channel histograms")
+axes[2, 3].legend()
+
+plt.suptitle("Demo: Color Models - RGB/HSV/YUV Decomposition", fontsize=14, fontweight="bold")
 plt.tight_layout()
-plt.savefig("S4_颜色模型/实验结果_RGB耦合.png", dpi=150, bbox_inches="tight")
-print("\n[保存] 实验一图已保存到 04_颜色模型/实验结果_RGB耦合.png")
-plt.show()
-
-# ============================================================
-# 实验二：HSV与光照无关——为什么HSV适合颜色分割
-# ============================================================
-print("\n" + "=" * 60)
-print("实验二：HSV的H（色调）与光照无关")
-print("=" * 60)
-
-# 同一张图，不同光照
-illuminated_blocks = {}
-for delta in [80, 0, -60, -140]:
-    img = np.clip(color_blocks.astype(int) + delta, 0, 255).astype(np.uint8)
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    illuminated_blocks[delta] = {
-        "rgb": img,
-        "hsv": hsv,
-        "H": hsv[:, :, 0].mean(),   # H范围0-180（OpenCV的HSV里H除以2存储）
-        "S": hsv[:, :, 1].mean(),   # S范围0-255
-        "V": hsv[:, :, 2].mean(),   # V范围0-255
-    }
-
-print("\n[光照变化对HSV的影响 - 四个色块平均]")
-print(f"{'光照':>10} | {'H(色调)':>10} | {'S(饱和度)':>12} | {'V(亮度)':>10}")
-print("-" * 50)
-for delta, data in illuminated_blocks.items():
-    label = f"+{delta}" if delta >= 0 else str(delta)
-    print(f"{label:>10} | {data['H']:>10.1f} | {data['S']:>12.1f} | {data['V']:>10.1f}")
-
-# 【实验现象1】V随光照大幅变化（+80→约235，-140→约45）
-# 【实验现象2】H基本不变（同一颜色的色调不随光照变）
-# 【实验现象3】S轻微变化（光照太强时饱和度可能降低——高光区域饱和度天然低）
-
-# 可视化：四张图×RGB/HSV分解
-fig, axes = plt.subplots(4, 4, figsize=(16, 16))
-illumination_deltas = [80, 0, -60, -140]
-
-for row, delta in enumerate(illumination_deltas):
-    data = illuminated_blocks[delta]
-    rgb_img = cv2.cvtColor(data["rgb"], cv2.COLOR_BGR2RGB)
-    hsv_img = data["hsv"]
-
-    # RGB通道
-    axes[row, 0].imshow(rgb_img)
-    title = f"光照{'+' if delta >= 0 else ''}{delta}"
-    axes[row, 0].set_title(title, fontsize=10)
-    axes[row, 0].axis("off")
-
-    # H、S、V通道
-    h_channel = hsv_img[:, :, 0].astype(np.float32) * 2  # 转回0-360
-    s_channel = hsv_img[:, :, 1]
-    v_channel = hsv_img[:, :, 2]
-
-    axes[row, 1].imshow(h_channel, cmap="hsv")
-    axes[row, 1].set_title(f"H(色调) 均值={data['H']:.1f}°", fontsize=9)
-    axes[row, 1].axis("off")
-
-    axes[row, 2].imshow(s_channel, cmap="gray")
-    axes[row, 2].set_title(f"S(饱和度) 均值={data['S']:.1f}", fontsize=9)
-    axes[row, 2].axis("off")
-
-    axes[row, 3].imshow(v_channel, cmap="gray")
-    axes[row, 3].set_title(f"V(亮度) 均值={data['V']:.1f}", fontsize=9)
-    axes[row, 3].axis("off")
-
-plt.suptitle("实验二：光照变化时RGB vs HSV对比\n（V随光照变，H几乎不变——这就是HSV适合颜色分割的原因）", fontsize=13, fontweight="bold")
-plt.tight_layout()
-plt.savefig("S4_颜色模型/实验结果_HSV分离.png", dpi=150, bbox_inches="tight")
-print("\n[保存] 实验二图已保存")
-plt.show()
-
-# ============================================================
-# 实验三：HSV颜色分割实战——检测红色和绿色目标
-# ============================================================
-print("\n" + "=" * 60)
-print("实验三：HSV颜色分割实战（检测红色和绿色）")
-print("=" * 60)
-
-# 构造一个包含红、绿、蓝、黄、橙的测试场景
-test_scene = np.zeros((300, 500, 3), dtype=np.uint8)
-# 放置色块
-test_scene[50:150, 50:150] = [0, 0, 255]      # 红
-test_scene[50:150, 200:300] = [0, 255, 0]     # 绿
-test_scene[50:150, 350:450] = [255, 255, 0]   # 黄
-test_scene[150:250, 50:150] = [0, 255, 255]   # 青
-test_scene[150:250, 200:300] = [255, 100, 50] # 橙
-
-# 加光照变化：左半边亮，右半边暗
-test_scene[:, 250:] = np.clip(test_scene[:, 250:].astype(int) - 60, 0, 255).astype(np.uint8)
-
-# 转HSV
-hsv_scene = cv2.cvtColor(test_scene, cv2.COLOR_BGR2HSV)
-
-# 定义红色范围（OpenCV的H范围是0-180，红色在0-10和170-180两端）
-red_lower1 = np.array([0, 50, 50])
-red_upper1 = np.array([10, 255, 255])
-red_lower2 = np.array([170, 50, 50])
-red_upper2 = np.array([180, 255, 255])
-
-# 绿色范围
-green_lower = np.array([35, 50, 50])
-green_upper = np.array([85, 255, 255])
-
-# 创建掩膜
-red_mask1 = cv2.inRange(hsv_scene, red_lower1, red_upper1)
-red_mask2 = cv2.inRange(hsv_scene, red_lower2, red_upper2)
-red_mask = red_mask1 | red_mask2
-green_mask = cv2.inRange(hsv_scene, green_lower, green_upper)
-
-# 统计检测结果
-red_pixels_left = np.sum(red_mask[50:150, 50:150] > 0)
-red_pixels_right = np.sum(red_mask[50:150, 300:400] > 0)
-green_pixels_left = np.sum(green_mask[50:150, 200:300] > 0)
-green_pixels_right = np.sum(green_mask[150:250, 200:300] > 0)
-
-print(f"[红色检测] 左半边（亮）: {red_pixels_left} 像素 | 右半边（暗）: {red_pixels_right} 像素")
-print(f"[绿色检测] 左半边（亮）: {green_pixels_left} 像素 | 右半边（暗）: {green_pixels_right} 像素")
-print(f"[检测率分析] 光照-60后，红色检测率: {red_pixels_right/max(red_pixels_left,1)*100:.1f}% | 绿色检测率: {green_pixels_right/max(green_pixels_left,1)*100:.1f}%")
-
-# 【实验现象】用HSV的H通道做颜色检测，光照变化时依然能检测到目标
-# 即使亮度降低了60，红色和绿色的H值仍在设定范围内
-
-fig, axes = plt.subplots(1, 4, figsize=(16, 4))
-axes[0].imshow(cv2.cvtColor(test_scene, cv2.COLOR_BGR2RGB))
-axes[0].set_title("原图（左亮右暗）")
-axes[0].axis("off")
-
-axes[1].imshow(red_mask, cmap="gray")
-axes[1].set_title(f"红色检测掩膜\n（左:{red_pixels_left} 右:{red_pixels_right}）")
-axes[1].axis("off")
-
-axes[2].imshow(green_mask, cmap="gray")
-axes[2].set_title(f"绿色检测掩膜\n（左:{green_pixels_left} 右:{green_pixels_right}）")
-axes[2].axis("off")
-
-# 叠加显示
-result = test_scene.copy()
-result[red_mask > 0] = [0, 255, 255]  # 红色区域涂成黄色
-result[green_mask > 0] = [255, 0, 255]  # 绿色区域涂成品红
-axes[3].imshow(cv2.cvtColor(result, cv2.COLOR_BGR2RGB))
-axes[3].set_title("检测结果叠加")
-axes[3].axis("off")
-
-plt.suptitle("实验三：HSV颜色分割实战\n（光照变化时依然能检测到红色和绿色）", fontsize=13, fontweight="bold")
-plt.tight_layout()
-plt.savefig("S4_颜色模型/实验结果_HSV颜色分割.png", dpi=150, bbox_inches="tight")
-print("\n[保存] 实验三图已保存")
-plt.show()
-
-# ============================================================
-# 实验四：饱和度低时H值不可靠
-# ============================================================
-print("\n" + "=" * 60)
-print("实验四：饱和度低时H值不可靠（灰白色无色调）")
-print("=" * 60)
-
-# 构造不同饱和度的同一色调图像
-base_color = np.array([180, 40, 30], dtype=np.uint8)  # 红色基准
-saturations = [255, 180, 100, 50, 20, 5]  # 不同饱和度级别
-
-print("\n[饱和度从高到低，H值的变化]")
-print(f"{'饱和度':>8} | {'H(色调°)':>12} | {'可靠性':>10}")
-print("-" * 40)
-
-for sat in saturations:
-    # 通过插值降低饱和度
-    # 从base_color（高饱和）到白色(255,255,255)插值
-    ratio = 1 - sat / 255.0
-    desaturated = ((1 - ratio) * base_color + ratio * np.array([255, 255, 255])).astype(np.uint8)
-    hsv = cv2.cvtColor(np.array([[desaturated]], dtype=np.uint8), cv2.COLOR_BGR2HSV)[0, 0]
-    h = hsv[0] * 2  # 转回0-360
-    s = hsv[1]
-    reliable = "✓ 可靠" if s > 30 else "⚠️ 不可靠"
-    print(f"{sat:>8} | {h:>10.1f}° | {reliable} (S={s})")
-
-# 【实验现象】饱和度越低，H值越不稳定（越接近白色，"色调"越没有意义）
-# 当S<30时，H值会跳变，不再反映真实的颜色种类
+plt.savefig("S4_颜色模型/demo_output.png", dpi=150, bbox_inches="tight")
+print("\n[Saved] -> S4_颜色模型/demo_output.png")
+plt.close()
 
 print("\n" + "=" * 60)
-print("本章实验结论汇总：")
+print("Summary:")
 print("=" * 60)
-print("1. RGB三通道耦合 → 光照变化时RGB值全变，但色调不变")
-print("2. HSV的H与光照无关 → 适合做颜色分割，S低时H不可靠")
-print("3. YUV亮度-色度分离 → 视频压缩降低色度分辨率节省带宽")
-print("4. 颜色模型选择：颜色分割→HSV；视频→YUV；采集显示→RGB")
+print("1. RGB channels are coupled -> illumination changes all 3 proportionally")
+print("2. HSV H is illumination-invariant -> best for color segmentation")
+print("3. YUV separates luminance (Y) from chrominance (U/V) -> video compression uses this")
+print("4. H is meaningless when S=0 (grayscale) -> always check S before using H")
